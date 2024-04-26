@@ -1,0 +1,203 @@
+const { prompt } = require("inquirer");
+const constants = require('./constantsClass');
+
+class Question {
+    constructor(){
+        this.currentAction = "";
+        this.currentTable = "";
+        this.currentView = "";
+    }
+
+    clear() {
+        this.currentAction = "";
+        this.currentTable = "";
+        this.currentView = "";
+    }
+
+    hasAction() {
+        return this.currentAction.length > 0;
+    }
+
+    hasTable() {
+        return this.currentTable.length > 0;
+    }
+
+    hasView() {
+        return this.currentView.length > 0;
+    }
+
+    async crudAction(){
+        let result = "";
+        await prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: "Select Action?",
+                choices: [
+                  {
+                    name: "View",
+                    value: constants.VIEW
+                  },
+                  {
+                    name: "Add",
+                    value: constants.ADD
+                  },
+                  {
+                    name: "Update",
+                    value: constants.UPDATE
+                  },
+                  {
+                    name: "Delete",
+                    value: constants.DELETE
+                  },
+                  {
+                    name: "Quit",
+                    value: constants.QUIT
+                  }
+                ]
+              }
+            
+          ]).then(res => {
+            result = res.choice;
+            
+          }
+          
+        );
+        
+        if (result === constants.QUIT) {
+            this.clear();
+        } else {
+            this.currentAction = result;
+        }
+
+        return result;
+    }
+  
+    async table(){
+        let result = "";
+        await prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: `Select Table for (${this.currentAction})?`,
+                choices: [
+                  {
+                    name: "Depatment",
+                    value: constants.DEPARTMENT
+                  },
+                  {
+                    name: "Roles",
+                    value: constants.ROLES
+                  },
+                  {
+                    name: "Employees",
+                    value: constants.EMPLOYEES
+                  },
+                  {
+                    name: "Back",
+                    value: constants.BACK
+                  },
+                  {
+                    name: "Quit",
+                    value: constants.QUIT
+                  }
+                ]
+              }
+            
+          ]).then(res => {
+            result = res.choice;
+          }
+        );
+
+        if (result === constants.QUIT) {
+            this.clear();
+        } else if ( result === constants.BACK) {
+            this.currentAction = ""
+            this.currentTable = "";
+        } else {
+            this.currentTable = result;
+        }
+
+        return result;
+    }
+
+    async view(){
+        let result = "";
+        await prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: `Select View for (${this.currentTable})?`,
+                choices: this.generateViewChoices(),
+              }
+            
+          ]).then(res => {
+            result = res.choice;
+            
+          }
+          
+        );
+
+        if (result === constants.QUIT) {
+            this.clear();
+        } else if ( result === constants.BACK) {
+            this.currentTable = "";
+            this.currentView = "";
+        } else {
+            this.currentView = result;
+        }
+
+        return result;
+    }
+    
+}
+
+Question.prototype.generateViewChoices = function () {
+    let choices = [];
+
+    choices.push({
+        name: "All",
+        value: constants.ALL
+      }
+    );
+
+    if (this.currentTable === constants.DEPARTMENT) {
+        choices.push({
+        name: "Total Utilized Budget By Department",
+        value: constants.BUDGET_BY_DEPARTMENT
+      });
+    };
+
+    if (this.currentTable === constants.EMPLOYEES) {
+        choices.push({
+            name: "All Employees By Department",
+            value: constants.ROLES
+          });
+
+        choices.push({
+        name: "All Employees By Manager",
+        value: constants.EMPLOYEE_BY_MANAGER
+        });
+    };
+
+    
+
+    choices.push({
+        name: "Back",
+        value: constants.BACK
+      }
+    );
+    
+    choices.push({
+        name: "Quit",
+        value: constants.QUIT
+      }
+    );
+
+    return choices;
+}
+
+
+  
+
+module.exports = new Question();

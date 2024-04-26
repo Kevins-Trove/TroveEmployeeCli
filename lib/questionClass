@@ -90,8 +90,8 @@ class Question {
                     value: constants.ROLES
                   },
                   {
-                    name: "Employees",
-                    value: constants.EMPLOYEES
+                    name: "Employee",
+                    value: constants.EMPLOYEE
                   },
                   {
                     name: "Back",

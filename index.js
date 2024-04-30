@@ -18,34 +18,36 @@ async function main() {
     // Prompt loop
     while (action !== constants.QUIT) {
 
-    if (!question.hasAction() && !question.hasTable() && !question.hasView()){
-        action = await question.crudAction();
-    }
-    
-    if (question.hasAction() && !question.hasTable() && !question.hasView()){
-        action =  await question.table();
-    }
-
-    // Prompt for View of data
-    if (question.hasAction() && question.hasTable() && !question.hasView()){
-        action = await question.view();
-    }
-
-    // Process SQL
-    if (question.hasAction() && question.hasTable() && question.hasView()){
-        console.log("Process", question.currentAction, question.currentTable, question.currentView);
-    
-        if (question.currentAction == constants.VIEW){
-            db.show(question.currentTable)
+        if (!question.hasAction() && !question.hasTable() && !question.hasView()){
+            action = await question.crudAction();
         }
-        //view = await question.view();
-        process.exit();
-    }
+        
+        if (question.hasAction() && !question.hasTable() && !question.hasView()){
+            action =  await question.table();
+        }
 
+        // Prompt for View of data
+        if (question.hasAction() && question.hasTable() && !question.hasView()){
+            action = await question.view();
+        }
+
+        // Process SQL
+        if (question.hasAction() && question.hasTable() && question.hasView()){
+            console.log("Process", question.currentAction, question.currentTable, question.currentView);
+        
+            if (question.currentAction == constants.VIEW){
+                db.show(question.currentTable)
+            }
+            
+            //view = await question.view();
+            
+        }
+
+        
     
   };
 
-  console.log(action, "test-----------------------------------------");
+  display.renderFooter();
   process.exit();
 }
 

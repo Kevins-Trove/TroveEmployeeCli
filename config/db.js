@@ -5,30 +5,11 @@ class DB {
  
 
   // Functions
-  viewQueryByTable = function(tableName){
-    console.log("\n");
-    connection.promise().query("SELECT * FROM employee")
-      .then( ([rows,fields]) => {
-          console.table(rows);
-      })
-      .catch(console.log)
-      .then( () => console.log("\n"));
-  }
 
-  viewEmployees = function(){
-      console.log("\n");
-      connection.promise().query("SELECT * FROM employee")
-        .then( ([rows,fields]) => {
-            console.table(rows);
-        })
-        .catch(console.log)
-        .then( () => console.log("\n"));
-  }
+ 
 
-  viewRoles = function(){
-    
-    
-    connection.promise().query("SELECT * FROM role")
+  viewTable = function(name){
+    connection.promise().query("SELECT * FROM " + name)
       .then( ([rows,fields]) => {
         display.renderTableHeader("Roles", fields);
         display.renderTableFields(rows);
@@ -39,17 +20,7 @@ class DB {
       .then( () => console.log("\n"));
   }
 
-  viewDepartments = function(){
-    console.table("\n");
-    connection.promise().query("SELECT * FROM Department")
-      .then( ([rows,fields]) => {
-          console.table(rows);
-      })
-      .catch(console.log)
-      .then( () => console.log("\n"));
-      
-  }
-
+ 
 }
 
 

@@ -1,5 +1,6 @@
 const { prompt } = require("inquirer");
 const constants = require('./constantsClass');
+const db = require("../config/db");
 
 class Question {
     constructor(){
@@ -132,6 +133,7 @@ class Question {
               }
             
           ]).then(res => {
+
             result = res.choice;
             
           }

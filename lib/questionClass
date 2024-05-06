@@ -16,15 +16,15 @@ class Question {
     }
 
     hasAction() {
-        return this.currentAction.length > 0;
+        return this.currentAction != null? this.currentAction.length: 0;
     }
 
     hasTable() {
-        return this.currentTable.length > 0;
+      return this.currentTable != null? this.currentTable.length: 0;
     }
 
     hasView() {
-        return this.currentView.length > 0;
+      return this.currentView != null? this.currentView.length: 0;
     }
 
     async crudAction(){
@@ -87,8 +87,8 @@ class Question {
                     value: constants.DEPARTMENT
                   },
                   {
-                    name: "Roles",
-                    value: constants.ROLES
+                    name: "Role",
+                    value: constants.ROLE
                   },
                   {
                     name: "Employee",
@@ -152,6 +152,202 @@ class Question {
         return result;
     }
     
+  async addRole(){
+      let result = "";
+      const choices = await db.getDepartments();
+      
+      await prompt([
+        {
+          name: "title",
+          message: "What is the name of the role?"
+        },
+        {
+          name: "salary",
+          message: "What is the salary of the role?"
+        },
+        {
+          type: "list",
+          name: "department_id",
+          message: "Which department does the role belong to?",
+          choices: choices
+        }
+      ])
+        .then(role => {
+          let record = role;
+          
+          
+          
+          db.createRole(role)
+            .then((result) => {
+              console.log(`\n `);
+              console.log(`Added ${role.title} to the database`);
+            })
+            .catch((err) => { 
+              console.log(`\n`);
+              console.log(`Cannot add ${role.title} to the database\n ${err.sqlMessage}`)
+            });
+            result = true;
+        })
+      
+      return result;
+  }
+
+  async addDepartment(){
+    let result = "";
+        
+    await prompt([
+      {
+        name: "name",
+        message: "What is the name of the department?"
+      }
+    ])
+      .then(department => {
+        db.createDepartment(department)
+          .then((result) => {
+            console.log(`\n `);
+            console.log(`Added ${department.name} to the database`);
+          })
+          .catch((err) => { 
+            console.log(`\n`);
+            console.log(`Cannot add ${department.name} to the database\n ${err.sqlMessage}`)
+          });
+          result = true;
+      })
+    
+    return result;
+}
+
+async addEmployee(){
+  let result = "";
+  const choices = await db.getRoles();
+  const managers = await db.getManagers();
+
+  await prompt([
+    {
+      name: "first_name",
+      message: "What is the first name of the employee?"
+    },
+    {
+      name: "last_name",
+      message: "What is the last name of the employee?"
+    },
+    {
+      type: "list",
+      name: "role_id",
+      message: "What is their role?",
+      choices: choices
+    },
+    {
+      type: "list",
+      name: "manager_id",
+      message: "Who is there manager?",
+      choices: managers
+    }
+  ])
+    .then(employee => {
+      let record = role;
+      
+      //record.role_id = record.role_id.split(" - ")[0]; 
+      //record.manager_id = record.manager_id_id.split(" - ")[0]; 
+
+      db.createEmployee(employee)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Added ${employee.first_name} ${employee.last_name} to the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot add ${employee.first_name} ${employee.last_name} to the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+async deleteRole(){
+  let result = "";
+  const choices = await db.getRoles();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which role do you want deleted?",
+      choices: choices
+    }
+  ])
+    .then(role => {
+      db.deleteRole(role.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Deleted ${role.id} from the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot delete ${role.id} from the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+async deleteDepartment(){
+  let result = "";
+  const choices = await db.getDepartments;
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which department do you want deleted?",
+      choices: choices
+    }
+  ])
+    .then(department => {
+      db.deleteDepartment(department.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Deleted ${department.id} from the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot delete ${department.id} from the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+  }
+
+async deleteEmployee(){
+  let result = "";
+  const choices = await db.getManagers();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which employee do you want deleted?",
+      choices: choices
+    }
+  ])
+    .then(employee => {
+      db.deleteEmployee(employee.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Deleted ${employee.id} from the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot delete ${employee.id} from the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
 }
 
 Question.prototype.generateViewChoices = function () {
@@ -170,10 +366,10 @@ Question.prototype.generateViewChoices = function () {
       });
     };
 
-    if (this.currentTable === constants.EMPLOYEES) {
+    if (this.currentTable === constants.EMPLOYEE) {
         choices.push({
             name: "All Employees By Department",
-            value: constants.ROLES
+            value: constants.EMPLOYEE_BY_DEPARTMENT
           });
 
         choices.push({

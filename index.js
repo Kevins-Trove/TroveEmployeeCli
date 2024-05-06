@@ -3,9 +3,12 @@ const { prompt } = require("inquirer");
 const display = require("./lib/displayClass");
 const question = require("./lib/questionClass");
 const constants = require('./lib/constantsClass');
-const db = require("./lib/databaseClass");
+//const db = require("./lib/databaseClass");
+const db = require("./config/db");
 
+  
 main();
+
 
 
 // Entry point
@@ -18,16 +21,19 @@ async function main() {
     // Prompt loop
     while (action !== constants.QUIT) {
 
+        // Determine action to take
         if (!question.hasAction() && !question.hasTable() && !question.hasView()){
             action = await question.crudAction();
         }
         
+        // What table are we working with
         if (question.hasAction() && !question.hasTable() && !question.hasView()){
             action =  await question.table();
         }
 
         // Prompt for View of data
         if (question.hasAction() && question.hasTable() && !question.hasView()){
+            await db.viewRoles();
             action = await question.view();
         }
 
@@ -39,7 +45,7 @@ async function main() {
                 db.show(question.currentTable)
             }
             
-            //view = await question.view();
+           
             
         }
 

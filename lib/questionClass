@@ -1,0 +1,599 @@
+//-----------------------------------------------------------------
+// QuestionClass - Handles user prompts for CLI
+//-----------------------------------------------------------------
+
+// Included
+const { prompt } = require("inquirer");
+const constants = require('./constantsClass');
+const db = require("../config/db");
+
+// Class declaration
+class Question {
+    constructor(){
+        this.currentAction = "";
+        this.currentTable = "";
+        this.currentView = "";
+    }
+
+    clear() {
+        this.currentAction = "";
+        this.currentTable = "";
+        this.currentView = "";
+    }
+
+    //-----------------------------------------------------------------
+    // Public methods
+    //-----------------------------------------------------------------
+
+    hasAction() {
+        return this.currentAction != null? this.currentAction.length: 0;
+    }
+
+    hasTable() {
+      return this.currentTable != null? this.currentTable.length: 0;
+    }
+
+    hasView() {
+      return this.currentView != null? this.currentView.length: 0;
+    }
+
+    //-----------------------------------------------------------------
+    // User interaction controlers
+    //-----------------------------------------------------------------
+    async crudAction(){
+        let result = "";
+        await prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: "Select Action?",
+                choices: [
+                  {
+                    name: "View",
+                    value: constants.VIEW
+                  },
+                  {
+                    name: "Add",
+                    value: constants.ADD
+                  },
+                  {
+                    name: "Update",
+                    value: constants.UPDATE
+                  },
+                  {
+                    name: "Delete",
+                    value: constants.DELETE
+                  },
+                  {
+                    name: "Quit",
+                    value: constants.QUIT
+                  }
+                ]
+              }
+            
+          ]).then(res => {
+            result = res.choice;
+            
+          }
+          
+        );
+        
+        if (result === constants.QUIT) {
+            this.clear();
+        } else {
+            this.currentAction = result;
+        }
+
+        return result;
+    }
+  
+    async table(){
+        let result = "";
+        await prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: `Select Table for (${this.currentAction})?`,
+                choices: [
+                  {
+                    name: "Depatment",
+                    value: constants.DEPARTMENT
+                  },
+                  {
+                    name: "Role",
+                    value: constants.ROLE
+                  },
+                  {
+                    name: "Employee",
+                    value: constants.EMPLOYEE
+                  },
+                  {
+                    name: "Back",
+                    value: constants.BACK
+                  },
+                  {
+                    name: "Quit",
+                    value: constants.QUIT
+                  }
+                ]
+              }
+            
+          ]).then(res => {
+            result = res.choice;
+          }
+        );
+
+        if (result === constants.QUIT) {
+            this.clear();
+        } else if ( result === constants.BACK) {
+            this.currentAction = ""
+            this.currentTable = "";
+        } else {
+            this.currentTable = result;
+        }
+
+        return result;
+    }
+
+    async view(){
+        let result = "";
+        await prompt([
+            {
+                type: "list",
+                name: "choice",
+                message: `Select View for (${this.currentTable})?`,
+                choices: this.generateViewChoices(),
+              }
+            
+          ]).then(res => {
+
+            result = res.choice;
+            
+          }
+          
+        );
+
+        if (result === constants.QUIT) {
+            this.clear();
+        } else if ( result === constants.BACK) {
+            this.currentTable = "";
+            this.currentView = "";
+        } else {
+            this.currentView = result;
+        }
+
+        return result;
+    }
+    
+  //-----------------------------------------------------------------
+  // Add functions
+  //-----------------------------------------------------------------
+  async addRole(){
+      let result = "";
+      const choices = await db.getDepartments();
+      
+      await prompt([
+        {
+          name: "title",
+          message: "What is the name of the role?"
+        },
+        {
+          name: "salary",
+          message: "What is the salary of the role?"
+        },
+        {
+          type: "list",
+          name: "department_id",
+          message: "Which department does the role belong to?",
+          choices: choices
+        }
+      ])
+        .then(role => {
+          let record = role;
+          
+          
+          
+          db.createRole(role)
+            .then((result) => {
+              console.log(`\n `);
+              console.log(`Added ${role.title} to the database`);
+            })
+            .catch((err) => { 
+              console.log(`\n`);
+              console.log(`Cannot add ${role.title} to the database\n ${err.sqlMessage}`)
+            });
+            result = true;
+        })
+      
+      return result;
+  }
+
+  async addDepartment(){
+    let result = "";
+        
+    await prompt([
+      {
+        name: "name",
+        message: "What is the name of the department?"
+      }
+    ])
+      .then(department => {
+        db.createDepartment(department)
+          .then((result) => {
+            console.log(`\n `);
+            console.log(`Added ${department.name} to the database`);
+          })
+          .catch((err) => { 
+            console.log(`\n`);
+            console.log(`Cannot add ${department.name} to the database\n ${err.sqlMessage}`)
+          });
+          result = true;
+      })
+    
+    return result;
+}
+
+async addEmployee(){
+  let result = "";
+  const choices = await db.getRoles();
+  const managers = await db.getManagers();
+
+  await prompt([
+    {
+      name: "first_name",
+      message: "What is the first name of the employee?"
+    },
+    {
+      name: "last_name",
+      message: "What is the last name of the employee?"
+    },
+    {
+      type: "list",
+      name: "role_id",
+      message: "What is their role?",
+      choices: choices
+    },
+    {
+      type: "list",
+      name: "manager_id",
+      message: "Who is there manager?",
+      choices: managers
+    }
+  ])
+    .then(employee => {
+      db.createEmployee(employee)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Added ${employee.first_name} ${employee.last_name} to the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot add ${employee.first_name} ${employee.last_name} to the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+//-----------------------------------------------------------------
+// Update functions
+//-----------------------------------------------------------------
+async selectEmployee(){
+  let result = "";
+  const employee = await db.getManagers();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which employee do you want update?",
+      choices: employee
+    }
+  ])
+    .then(employee => {
+     result = employee ;
+    })
+  
+  return result;
+
+}
+
+async updateEmployee(id){
+  let result = "";
+
+  const roles = await db.getRoles();
+  const employee = await db.getEmployee(id);
+
+  await prompt([
+    {
+      type: "input",
+      name: "first_name",
+      message: "What is the first_name of the employee?",
+      default: employee[0].first_name
+    },
+    {
+      type: "input",
+      name: "last_name",
+      message: "What is the last name of the employee?",
+      default: employee[0].last_name
+    },
+    {
+      type: "list",
+      name: "role_id",
+      message: "Which role will the employee work as?",
+      choices: roles
+    }
+])
+  .then(newEmployee => {
+    
+    db.updateEmployee(newEmployee, id.id)
+      .then((result) => {
+        console.log(`\n `);
+        console.log(`Updated ${newEmployee.last_name} to the database`);
+      })
+      .catch((err) => { 
+        console.log(`\n`);
+        console.log(`Cannot update ${newEmployee.last_name} to the database\n ${err}`)
+      });
+      result = true;
+  })
+
+return result;
+}
+
+async selectRole(){
+    let result = "";
+    const roles = await db.getRoles();
+    
+    await prompt([
+      {
+        type: "list",
+        name: "id",
+        message: "Which role do you want update?",
+        choices: roles
+      }
+    ])
+      .then(role => {
+       result = role ;
+      })
+    
+    return result;
+
+}
+
+async updateRole(id){
+  let result = "";
+  const choices = await db.getDepartments();
+  const role = await db.getRole(id);
+
+  await prompt([
+    {
+      type: "input",
+      name: "title",
+      message: "What is the name of the role?",
+      default: role[0].title
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the salary of the role?",
+      default: role[0].salary
+    },
+    {
+      type: "list",
+      name: "department_id",
+      message: "Which department does the role belong to?",
+      choices: choices
+    }
+  ])
+    .then(newRole => {
+      
+      db.updateRole(newRole, id.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Updated ${newRole.title} to the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot update ${newRole.title} to the database\n ${err}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+async selectDepartment(){
+  let result = "";
+  const roles = await db.getDepartments();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which department do you want update?",
+      choices: roles
+    }
+  ])
+    .then(role => {
+     result = role ;
+    })
+  
+  return result;
+
+}
+
+async updateDepartment(id){
+  let result = "";
+  
+  const role = await db.getDepartment(id);
+
+  await prompt([
+    {
+      type: "input",
+      name: "name",
+      message: "What is the name of the department?",
+      default: role[0].name
+    }
+  ])
+    .then(newDepartment => {
+      
+      db.updateDepartment(newDepartment, id.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Updated ${newDepartment.name} to the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot update ${newDepartment.name} to the database\n ${err}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+
+
+//-----------------------------------------------------------------
+// Delete functions
+//-----------------------------------------------------------------
+
+async deleteRole(){
+  let result = "";
+  const choices = await db.getRoles();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which role do you want deleted?",
+      choices: choices
+    }
+  ])
+    .then(role => {
+      db.deleteRole(role.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Deleted ${role.id} from the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot delete ${role.id} from the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+async deleteDepartment(){
+  let result = "";
+  const choices = await db.getDepartments;
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which department do you want deleted?",
+      choices: choices
+    }
+  ])
+    .then(department => {
+      db.deleteDepartment(department.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Deleted ${department.id} from the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot delete ${department.id} from the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+  }
+
+async deleteEmployee(){
+  let result = "";
+  const choices = await db.getManagers();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which employee do you want deleted?",
+      choices: choices
+    }
+  ])
+    .then(employee => {
+      db.deleteEmployee(employee.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Deleted ${employee.id} from the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot delete ${employee.id} from the database\n ${err.sqlMessage}`)
+        });
+        result = true;
+    })
+  
+  return result;
+  }
+}
+
+//-----------------------------------------------------------------
+// Support functions
+//-----------------------------------------------------------------
+Question.prototype.generateViewChoices = function () {
+    let choices = [];
+
+    choices.push({
+        name: "All",
+        value: constants.ALL
+      }
+    );
+
+    if (this.currentTable === constants.DEPARTMENT) {
+        choices.push({
+        name: "Total Utilized Budget By Department",
+        value: constants.BUDGET_BY_DEPARTMENT
+      });
+    };
+
+    if (this.currentTable === constants.EMPLOYEE) {
+        choices.push({
+            name: "All Employees By Department",
+            value: constants.EMPLOYEE_BY_DEPARTMENT
+          });
+
+        choices.push({
+        name: "All Employees By Manager",
+        value: constants.EMPLOYEE_BY_MANAGER
+        });
+    };
+
+    
+
+    choices.push({
+        name: "Back",
+        value: constants.BACK
+      }
+    );
+    
+    choices.push({
+        name: "Quit",
+        value: constants.QUIT
+      }
+    );
+
+    return choices;
+}
+
+
+  
+
+module.exports = new Question();

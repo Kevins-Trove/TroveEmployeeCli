@@ -366,7 +366,7 @@ async updateRole(id){
   let result = "";
   const choices = await db.getDepartments();
   const role = await db.getRole(id);
-console.log(role);
+
   await prompt([
     {
       type: "input",
@@ -454,48 +454,7 @@ async updateDepartment(id){
   return result;
 }
 
-// async updateEmployee(){
-// let result = "";
-// const choices = await db.getRoles();
-// const managers = await db.getManagers();
 
-// await prompt([
-//   {
-//     name: "first_name",
-//     message: "What is the first name of the employee?"
-//   },
-//   {
-//     name: "last_name",
-//     message: "What is the last name of the employee?"
-//   },
-//   {
-//     type: "list",
-//     name: "role_id",
-//     message: "What is their role?",
-//     choices: choices
-//   },
-//   {
-//     type: "list",
-//     name: "manager_id",
-//     message: "Who is there manager?",
-//     choices: managers
-//   }
-// ])
-//   .then(employee => {
-//     db.createEmployee(employee)
-//       .then((result) => {
-//         console.log(`\n `);
-//         console.log(`Added ${employee.first_name} ${employee.last_name} to the database`);
-//       })
-//       .catch((err) => { 
-//         console.log(`\n`);
-//         console.log(`Cannot add ${employee.first_name} ${employee.last_name} to the database\n ${err.sqlMessage}`)
-//       });
-//       result = true;
-//   })
-
-// return result;
-// }
 
 //-----------------------------------------------------------------
 // Delete functions

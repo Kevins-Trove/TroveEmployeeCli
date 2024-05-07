@@ -1,7 +1,13 @@
+//-----------------------------------------------------------------
+// QuestionClass - Handles user prompts for CLI
+//-----------------------------------------------------------------
+
+// Included
 const { prompt } = require("inquirer");
 const constants = require('./constantsClass');
 const db = require("../config/db");
 
+// Class declaration
 class Question {
     constructor(){
         this.currentAction = "";
@@ -15,6 +21,10 @@ class Question {
         this.currentView = "";
     }
 
+    //-----------------------------------------------------------------
+    // Public methods
+    //-----------------------------------------------------------------
+
     hasAction() {
         return this.currentAction != null? this.currentAction.length: 0;
     }
@@ -27,6 +37,9 @@ class Question {
       return this.currentView != null? this.currentView.length: 0;
     }
 
+    //-----------------------------------------------------------------
+    // User interaction controlers
+    //-----------------------------------------------------------------
     async crudAction(){
         let result = "";
         await prompt([
@@ -152,6 +165,9 @@ class Question {
         return result;
     }
     
+  //-----------------------------------------------------------------
+  // Add functions
+  //-----------------------------------------------------------------
   async addRole(){
       let result = "";
       const choices = await db.getDepartments();
@@ -245,11 +261,6 @@ async addEmployee(){
     }
   ])
     .then(employee => {
-      let record = role;
-      
-      //record.role_id = record.role_id.split(" - ")[0]; 
-      //record.manager_id = record.manager_id_id.split(" - ")[0]; 
-
       db.createEmployee(employee)
         .then((result) => {
           console.log(`\n `);
@@ -264,6 +275,231 @@ async addEmployee(){
   
   return result;
 }
+
+//-----------------------------------------------------------------
+// Update functions
+//-----------------------------------------------------------------
+async selectEmployee(){
+  let result = "";
+  const employee = await db.getManagers();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which employee do you want update?",
+      choices: employee
+    }
+  ])
+    .then(employee => {
+     result = employee ;
+    })
+  
+  return result;
+
+}
+
+async updateEmployee(id){
+  let result = "";
+
+  const roles = await db.getRoles();
+  const employee = await db.getEmployee(id);
+
+  await prompt([
+    {
+      type: "input",
+      name: "first_name",
+      message: "What is the first_name of the employee?",
+      default: employee[0].first_name
+    },
+    {
+      type: "input",
+      name: "last_name",
+      message: "What is the last name of the employee?",
+      default: employee[0].last_name
+    },
+    {
+      type: "list",
+      name: "role_id",
+      message: "Which role will the employee work as?",
+      choices: roles
+    }
+])
+  .then(newEmployee => {
+    
+    db.updateEmployee(newEmployee, id.id)
+      .then((result) => {
+        console.log(`\n `);
+        console.log(`Updated ${newEmployee.last_name} to the database`);
+      })
+      .catch((err) => { 
+        console.log(`\n`);
+        console.log(`Cannot update ${newEmployee.last_name} to the database\n ${err}`)
+      });
+      result = true;
+  })
+
+return result;
+}
+
+async selectRole(){
+    let result = "";
+    const roles = await db.getRoles();
+    
+    await prompt([
+      {
+        type: "list",
+        name: "id",
+        message: "Which role do you want update?",
+        choices: roles
+      }
+    ])
+      .then(role => {
+       result = role ;
+      })
+    
+    return result;
+
+}
+
+async updateRole(id){
+  let result = "";
+  const choices = await db.getDepartments();
+  const role = await db.getRole(id);
+console.log(role);
+  await prompt([
+    {
+      type: "input",
+      name: "title",
+      message: "What is the name of the role?",
+      default: role[0].title
+    },
+    {
+      type: "input",
+      name: "salary",
+      message: "What is the salary of the role?",
+      default: role[0].salary
+    },
+    {
+      type: "list",
+      name: "department_id",
+      message: "Which department does the role belong to?",
+      choices: choices
+    }
+  ])
+    .then(newRole => {
+      
+      db.updateRole(newRole, id.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Updated ${newRole.title} to the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot update ${newRole.title} to the database\n ${err}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+async selectDepartment(){
+  let result = "";
+  const roles = await db.getDepartments();
+  
+  await prompt([
+    {
+      type: "list",
+      name: "id",
+      message: "Which department do you want update?",
+      choices: roles
+    }
+  ])
+    .then(role => {
+     result = role ;
+    })
+  
+  return result;
+
+}
+
+async updateDepartment(id){
+  let result = "";
+  
+  const role = await db.getDepartment(id);
+
+  await prompt([
+    {
+      type: "input",
+      name: "name",
+      message: "What is the name of the department?",
+      default: role[0].name
+    }
+  ])
+    .then(newDepartment => {
+      
+      db.updateDepartment(newDepartment, id.id)
+        .then((result) => {
+          console.log(`\n `);
+          console.log(`Updated ${newDepartment.name} to the database`);
+        })
+        .catch((err) => { 
+          console.log(`\n`);
+          console.log(`Cannot update ${newDepartment.name} to the database\n ${err}`)
+        });
+        result = true;
+    })
+  
+  return result;
+}
+
+// async updateEmployee(){
+// let result = "";
+// const choices = await db.getRoles();
+// const managers = await db.getManagers();
+
+// await prompt([
+//   {
+//     name: "first_name",
+//     message: "What is the first name of the employee?"
+//   },
+//   {
+//     name: "last_name",
+//     message: "What is the last name of the employee?"
+//   },
+//   {
+//     type: "list",
+//     name: "role_id",
+//     message: "What is their role?",
+//     choices: choices
+//   },
+//   {
+//     type: "list",
+//     name: "manager_id",
+//     message: "Who is there manager?",
+//     choices: managers
+//   }
+// ])
+//   .then(employee => {
+//     db.createEmployee(employee)
+//       .then((result) => {
+//         console.log(`\n `);
+//         console.log(`Added ${employee.first_name} ${employee.last_name} to the database`);
+//       })
+//       .catch((err) => { 
+//         console.log(`\n`);
+//         console.log(`Cannot add ${employee.first_name} ${employee.last_name} to the database\n ${err.sqlMessage}`)
+//       });
+//       result = true;
+//   })
+
+// return result;
+// }
+
+//-----------------------------------------------------------------
+// Delete functions
+//-----------------------------------------------------------------
 
 async deleteRole(){
   let result = "";
@@ -347,9 +583,12 @@ async deleteEmployee(){
     })
   
   return result;
-}
+  }
 }
 
+//-----------------------------------------------------------------
+// Support functions
+//-----------------------------------------------------------------
 Question.prototype.generateViewChoices = function () {
     let choices = [];
 

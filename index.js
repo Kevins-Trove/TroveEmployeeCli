@@ -1,13 +1,16 @@
+//-----------------------------------------------------------------
+// TroveEmployeeCLI - Entry point for nodeJS app
+//-----------------------------------------------------------------
 
+// Included
 const display = require("./lib/displayClass");
 const question = require("./lib/questionClass");
 const constants = require('./lib/constantsClass');
 const db = require("./config/db");
 
-  
+// Entry point
 init();
 
-// Entry point
 async function init() {
   let action = '';
   
@@ -29,6 +32,9 @@ async function init() {
 
 }
 
+//-----------------------------------------------------------------
+// Support function
+//-----------------------------------------------------------------
 // delay to make prompting work 
 function delay(milliseconds){
   return new Promise(resolve => {
@@ -36,21 +42,8 @@ function delay(milliseconds){
   });
 }
 
-
-
 // render any action we have 
 async function processAction() {
-
-    // // View
-    // if (question.currentAction == constants.ADD && question.hasTable() ){   
-    //   switch (question.currentTable) {
-    //     case constants.ROLE:
-    //       addRole();
-    //       break;
-    //     default:
-
-    //     }
-    //   }
 
   // View
   if (question.hasAction() && question.hasTable() && question.hasView()){   
@@ -134,18 +127,39 @@ if (question.currentAction == constants.DELETE ){
   default:
 
   }
-  
 }
+  // update functions
+if (question.currentAction == constants.UPDATE ){
+  switch (question.currentTable){
+    case constants.ROLE:
+      result = await question.selectRole();
+      result = await question.updateRole(result);
+      question.currentAction = "";
+      return;
+      break;
+  case constants.DEPARTMENT:
+    result = await question.selectDepartment();
+    result = await question.updateDepartment(result);
+    question.currentAction = "";
+    return;
+    break;
+  case constants.EMPLOYEE:
+    result = await question.selectEmployee();
+    result = await question.updateEmployee(result);
+    question.currentAction = "";
+    return;
+    break;        
+  default:
+
+  }
+}
+  
     // Prompt for View of data
     if ( !question.hasView()){
         return await question.view();
     }
 
     
-    return ;//constants.QUIT
+    return;
  }
   
- // Add functions
- async function addRole(){
-   return await question.addRole();
-}
